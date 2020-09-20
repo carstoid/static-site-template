@@ -11,6 +11,7 @@ let contentPath
 
 const deckTemplate = require.resolve(`./src/templates/deck`)
 const pageTemplate = require.resolve('./src/templates/page')
+// const feedItem = require.resolve('./src/templates/feedItem')
 
 const mdxResolverPassthrough = fieldName => async (
   source,
@@ -58,9 +59,7 @@ exports.createSchemaCustomization = ({ actions, schema }) => {
   )
 }
 
-exports.createPages = async ({ graphql, actions, reporter, pathPrefix }) => {
-  const { createPage } = actions
-
+exports.createPages = async ({ graphql, actions: { createPage }, reporter, pathPrefix }) => {
   const result = await graphql(`
     {
       allMdx {
@@ -84,6 +83,11 @@ exports.createPages = async ({ graphql, actions, reporter, pathPrefix }) => {
             html
             frontmatter {
               slug
+            }
+            parent {
+              ... on File {
+                relativePath
+              }
             }
           }
         }
@@ -125,12 +129,19 @@ exports.createPages = async ({ graphql, actions, reporter, pathPrefix }) => {
   })
 
   pages.forEach(({ node }, index) => {
+    // fall back to path-derived slug if not provided
+    const dateRegex = /([\d\-]{8,10}\_)/i;
+    const slugFromPath = '/' + node.parent.relativePath.replace(dateRegex, '').replace('.md', '');
+    const slug = node.frontmatter.slug ? node.frontmatter.slug : slugFromPath;
+
+    // create documentation page
     createPage({
-      path: node.frontmatter.slug,
+      path: slug,
       component: pageTemplate,
       context: {
+        ...node,
         layout: "default",
-        slug: node.frontmatter.slug,
+        slug: slug,
       },
     })
   });
@@ -143,7 +154,7 @@ exports.onCreateNode = ({
   createNodeId,
   createContentDigest,
 }) => {
-  const { createNode, createParentChildLink } = actions
+  const { createNode, createNodeField, createParentChildLink } = actions
 
   const toPath = node => {
     const { dir } = path.posix.parse(node.relativePath)
