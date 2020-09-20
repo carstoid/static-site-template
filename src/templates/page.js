@@ -3,9 +3,10 @@ import { graphql } from 'gatsby';
 import Layout from '../layouts/default';
 
 export default function Template({ data }) {
-  const { markdownRemark, site } = data
+  console.log(data)
+  const { sitePage, site } = data
   const { siteMetadata } = site
-  const { html } = markdownRemark // frontmatter is available here too
+  const { context: { html }} = sitePage // frontmatter is available here too
 
   return (
     <Layout siteMetadata={siteMetadata}>
@@ -21,11 +22,14 @@ export const pageQuery = graphql`
         title
       }
     }
-    markdownRemark(frontmatter: { slug: { eq: $slug } }) {
-      html
-      frontmatter {
-        slug
-        title
+    sitePage(path: { eq: $slug }) {
+      path
+      context {
+        html
+        frontmatter {
+          slug
+          title
+        }
       }
     }
   }

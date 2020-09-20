@@ -3,3 +3,22 @@
 @tailwind utilities;
 
 /* overrides to tailwind, applies to all pages */
+
+:root {
+  --main-bg-color: #c7c5bc;
+  --main-text-color: #2b2a29;
+}
+
+html, body, #___gatsby, #gatsby-focus-wrapper {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  font-size: 0.95em;
+  background: var(--main-bg-color);
+  color: var(--main-text-color);
+}
+
+hr {
+  border-top: 1px solid var(--main-text-color);
+}
